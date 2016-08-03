@@ -1,0 +1,25 @@
+{
+  "@class" : "org.jasig.cas.services.RegexRegisteredService",
+  "serviceId" : "^(https|http)://.*/fcgi-bin/.*",
+  "name" : "HTTPS and IMAPS",
+  "id" : 10000006,
+  "description" : "This service definition authorized all application urls that support HTTPS and IMAPS protocols.",
+  "proxyPolicy" : {
+    "@class" : "org.jasig.cas.services.RegexMatchingRegisteredServiceProxyPolicy",
+    "pattern" : "^https?://.*"
+  },
+  "evaluationOrder" : 6,
+  "usernameAttributeProvider" : {
+    "@class" : "org.jasig.cas.services.DefaultRegisteredServiceUsernameProvider"
+  },
+  "logoutType" : "BACK_CHANNEL",
+  "attributeReleasePolicy" : {
+    "@class" : "org.jasig.cas.services.ReturnAllowedAttributeReleasePolicy",
+    "allowedAttributes" : [ "java.util.ArrayList", [ "userId","uid","name","email", "role","corpId","mobile","deptIds" ] ]
+  },
+  "accessStrategy" : {
+    "@class" : "org.jasig.cas.services.DefaultRegisteredServiceAccessStrategy",
+    "enabled" : true,
+    "ssoEnabled" : true
+  }
+}
