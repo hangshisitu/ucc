@@ -42,6 +42,8 @@ public class BookDao {
 
     private static final Logger logger = Logger.getLogger(BookDao.class);
 
+    private static byte[] lock = new byte[1];
+
     /**
      * id生成器
      * @return
@@ -56,16 +58,20 @@ public class BookDao {
             SearchOperation search = new SearchOperation(conn);
             SearchRequest searchRequest = new SearchRequest(getBaseDn(),"objectClass=*","uid");
             searchRequest.setSearchScope(SearchScope.OBJECT);
-            SearchResult result = search.execute(searchRequest).getResult();
-            LdapEntry entry = result.getEntry();
-            cid = Long.parseLong(entry.getAttribute("uid").getStringValue());
-            Long nextId = cid + 1;
-            cid = (workerId << sequenceBits)|cid;
 
-            ModifyOperation modify = new ModifyOperation(conn);
-            ModifyRequest modifyRequest = new ModifyRequest(entry.getDn(),new AttributeModification(
-                    AttributeModificationType.REPLACE,new LdapAttribute("uid",nextId.toString())));
-            modify.execute(modifyRequest);
+            synchronized (lock) {
+                SearchResult result = search.execute(searchRequest).getResult();
+                LdapEntry entry = result.getEntry();
+                cid = Long.parseLong(entry.getAttribute("uid").getStringValue());
+                Long nextId = cid + 1;
+                cid = (workerId << sequenceBits)|cid;
+
+                ModifyOperation modify = new ModifyOperation(conn);
+                ModifyRequest modifyRequest = new ModifyRequest(entry.getDn(),new AttributeModification(
+                        AttributeModificationType.REPLACE,new LdapAttribute("uid",nextId.toString())));
+                modify.execute(modifyRequest);
+            }
+
             logger.info(String.format("curId:%d",cid));
         }catch (Exception e)
         {
